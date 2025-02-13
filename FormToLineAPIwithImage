@@ -1,0 +1,57 @@
+const LINE_TOKEN = 'XXXXX'; // Channel access token
+
+const GROUP_ID = 'XXXXX'; // Group ID
+
+function FormToLineAPI(e) {
+  let textMessage = '📢 New Form Submission\n\n';
+  const imageMessages = []; 
+
+  // Parse form responses
+  e.response.getItemResponses().forEach(r => {
+    const title = r.getItem().getTitle();
+    const response = r.getResponse();
+
+    if (typeof response === 'object' && response.length > 0) {
+      // If response is a file, create an image message
+      const imageUrl = `https://lh3.googleusercontent.com/d/${response[0]}`;
+      imageMessages.push({
+        type: 'image',
+        originalContentUrl: imageUrl,
+        previewImageUrl: imageUrl
+      });
+      textMessage += `- ${title}: [Image Uploaded]\n`;
+    } else {
+      // Regular text response
+      textMessage += `- ${title}: ${response}\n`;
+    }
+  });
+
+  // Send text message
+  UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { Authorization: `Bearer ${LINE_TOKEN}` },
+    payload: JSON.stringify({
+      to: GROUP_ID,
+      messages: [{ type: 'text', text: textMessage }]
+    })
+  });
+
+  // Send image messages (if any)
+  imageMessages.forEach(imageMessage => {
+    UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { Authorization: `Bearer ${LINE_TOKEN}` },
+      payload: JSON.stringify({
+        to: GROUP_ID,
+        messages: [imageMessage]
+      })
+    });
+  });
+}
+
+
+
+// ตั้ง Trigger ให้รันฟังก์ชัน FormToLineAPI เป็นแบบเมื่อส่งฟอร์ม
+// https://webhook.site สำหรับเอา groupId และ userId

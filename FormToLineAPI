@@ -1,0 +1,23 @@
+const LINE_TOKEN = 'XXXXX'; // Channel access token
+
+const GROUP_ID = 'XXXXXX'; // Group ID
+
+function FormToLineAPI(e) {
+  const responses = e.response.getItemResponses().map(r => `- ${r.getItem().getTitle()}: ${r.getResponse()}`).join('\n');
+  const message = `📢 New Form Submission\n\n${responses}`;
+  
+  UrlFetchApp.fetch('https://api.line.me/v2/bot/message/push', {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { Authorization: `Bearer ${LINE_TOKEN}` },
+    payload: JSON.stringify({
+      to: GROUP_ID,
+      messages: [{ type: 'text', text: message }]
+    })
+  });
+}
+
+
+
+// ตั้ง Trigger ให้รันฟังก์ชัน FormToLineAPI เป็นแบบเมื่อส่งฟอร์ม
+// https://webhook.site สำหรับเอา groupId และ userId
